@@ -158,8 +158,9 @@ export const deleteProduct = asyncError(async (req, res, next) => {
 });
 
 export const addCategory = asyncError(async (req, res, next) => {
-    let user = await Category.findOne({Category});
-    if (user) return next(new errorHanlder("Category already exists", 400));
+    // let user = await Category.findOne({Categories});
+    // if(user) return next(new errorHanlder("Category already exists", 400));
+
     await Category.create(req.body);
 
     res.status(201).json({
