@@ -15,7 +15,7 @@ export const getAllProduct = asyncError(async (req, res, next) => {
             $regex : keyword ? keyword : "",
             $options : "i",
         },
-        category:category ? category : undefined,
+        // category:category ? category : undefined,
     });
 
   res.status(200).json({
@@ -23,6 +23,25 @@ export const getAllProduct = asyncError(async (req, res, next) => {
     products,
   });
 });
+
+
+export const getCategoryProduct = asyncError(async (req, res, next) => {
+  const { keyword, category } = req.query;
+
+  const products = await Product.find({
+    name: {
+      $regex: keyword ? keyword : "",
+      $options: "i",
+    },
+    category: category ? category : undefined, // Only include products with the specified category ID
+  });
+
+  res.status(200).json({
+    success: true,
+    products,
+  });
+});
+
 
 export const getAdminProduct = asyncError(async (req, res, next) => {
     // search & category query
