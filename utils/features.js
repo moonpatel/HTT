@@ -1,6 +1,7 @@
 import DataUriParser from "datauri/parser.js";
 import path from "path";
 import {createTransport} from "nodemailer";
+
 export const getDataUri = (file) => {
   const parser = new DataUriParser();
   console.log(file);

@@ -4,19 +4,15 @@ const schema = new mongoose.Schema({
   shippingInfo: {
     address: {
       type: String,
-      required: true,
     },
     city: {
       type: String,
-      required: true,
     },
     country: {
       type: String,
-      required: true,
     },
     pinCode: {
       type: Number,
-      required: true,
     },
   },
 
@@ -45,7 +41,10 @@ const schema = new mongoose.Schema({
       },
     },
   ],
-
+  dineIn: {
+    type:Boolean,
+    require:true
+  },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
@@ -63,7 +62,6 @@ const schema = new mongoose.Schema({
     id: String,
     status: String,
   },
-
   itemsPrice: {
     type: Number,
     required: true,
@@ -72,9 +70,8 @@ const schema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  shippingCharges: {
+  deliveryCharges: {
     type: Number,
-    required: true,
   },
   totalAmount: {
     type: Number,
@@ -83,7 +80,7 @@ const schema = new mongoose.Schema({
 
   orderStatus: {
     type: String,
-    enum: ["Preparing", "Shipped", "Delivered"],
+    enum: ["Preparing", "Out for delivery", "Delivered"],
     default: "Preparing",
   },
   deliveredAt: Date,

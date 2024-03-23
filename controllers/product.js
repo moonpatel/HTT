@@ -69,7 +69,7 @@ export const getProductDetails = asyncError(async (req, res, next) => {
 export const addProduct = asyncError(async (req, res, next) => {
   const { name, description, category, price, stock } = req.body;
     if (!req.file) return next(new errorHanlder("Please upload a file", 400));
-  const file = getDataUri( req.file);
+  const file = getDataUri(req.file);
   const myCloud = await cloudinary.v2.uploader.upload(file.content);
   const image = {
     public_id: myCloud.public_id,
@@ -220,3 +220,41 @@ export const deleteCategory = asyncError(async (req, res, next) => {
 
 });
 
+export async function rateProduct(req, res) {
+  try {
+    const { productId } = req.params;
+    const { rating, comment } = req.body;
+
+    // Input validation (optional)
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({ message: "Invalid rating value (1-5 required)" });
+    }
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // Check if user already rated this product (optional)
+    const existingRating = product.ratings.find(
+      (r) => r.userId.toString() === req.user._id.toString()
+    );
+    if (existingRating) {
+      return res.status(400).json({ message: "You can only rate a product once" });
+    }
+
+    // Add new rating to the product
+    product.ratings.push({
+      userId: req.user._id,
+      rating,
+      comment,
+    });
+
+    await product.save();
+
+    res.status(201).json({ message: "Product rated successfully" });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}

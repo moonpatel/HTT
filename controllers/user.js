@@ -5,6 +5,17 @@ import { cookieOptions, sendEmail, sendToken } from "../utils/features.js";
 import { getDataUri } from "../utils/features.js";
 import cloudinary from "cloudinary";
 
+import path from "path";
+import dotenv from "dotenv";
+import twilio from "twilio";
+dotenv.config({ path: path.resolve(process.cwd(), "../data/config.env") });
+
+import { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN } from "../secrets.js";
+const accountSid = TWILIO_ACCOUNT_SID;
+const authToken = TWILIO_AUTH_TOKEN;
+console.log(accountSid, authToken);
+const client = twilio(accountSid, authToken, { lazyLoading: true });
+
 export const login = asyncError(async (req, res, next) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email }).select("+password");
@@ -24,7 +35,8 @@ export const login = asyncError(async (req, res, next) => {
 });
 
 export const signup = asyncError(async (req, res, next) => {
-  const { name, email, password, address, city, country, pinCode } = req.body;
+  const { name, email, password, address, city, country, pinCode, phone } =
+    req.body;
   let user = await User.findOne({ email });
   if (user) return next(new errorHanlder("Email already exists", 400));
   // req.file
@@ -51,6 +63,7 @@ export const signup = asyncError(async (req, res, next) => {
     city,
     country,
     pinCode,
+    phone,
   });
   sendToken(user, res, `Registered Successfully`, 201);
 });
@@ -114,19 +127,19 @@ export const updatePic = asyncError(async (req, res, next) => {
   await cloudinary.v2.uploader.destroy(user.avatar.public_id);
   console.log(user.avatar.public_id);
 
-    // add cloudinary here
-    const myCloud = await cloudinary.v2.uploader.upload(file.content);
-    console.log(myCloud);
-    user.avatar = {
-      public_id: myCloud.public_id,
-      url: myCloud.secure_url,
-    };
-    await user.save();
+  // add cloudinary here
+  const myCloud = await cloudinary.v2.uploader.upload(file.content);
+  console.log(myCloud);
+  user.avatar = {
+    public_id: myCloud.public_id,
+    url: myCloud.secure_url,
+  };
+  await user.save();
 
   res.status(200).json({
-     success: true, 
-     message:"Avatar updated successfully"
-    });
+    success: true,
+    message: "Avatar updated successfully",
+  });
 });
 export const forgetPassword = asyncError(async (req, res, next) => {
   const { email } = req.body;
@@ -146,13 +159,12 @@ export const forgetPassword = asyncError(async (req, res, next) => {
   console.log("Hi1");
   const message = `Your OTP for Reseting Password is ${otp}.\n Please ignore if you haven't requested this.`;
   try {
-  console.log("Hi2");
+    console.log("Hi2");
 
     await sendEmail("OTP For Reseting Password", user.email, message);
-  console.log("Hi3");
-
+    console.log("Hi3");
   } catch (error) {
-  console.log("Hi4");
+    console.log("Hi4");
 
     user.otp = null;
     user.otp_expire = null;
@@ -195,3 +207,51 @@ export const resetPassword = asyncError(async (req, res, next) => {
   });
 });
 
+export const otpLogin = asyncError(async (req, res) => {
+  try {
+    const { phone } = req.body;
+
+    // Validate phone number format (optional)
+
+    // Check if user exists (optional)
+    const user = await User.findOne({ phone });
+
+    // Generate verification code using Twilio Verify (or your chosen OTP provider)
+    const verification = await client.verify.v2
+      .services(process.env.TWILIO_SERVICE_SID)
+      .verifications.create({
+        to: `+91${phone}`,
+        channel: "sms", // Or 'whatsapp' if enabled
+      });
+
+    res.status(200).json({
+      message: "Verification code sent",
+      verificationSid: verification.sid,
+    });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+export const verifyOtp = asyncError(async (req, res) => {
+  try {
+    const { verificationSid, code, phone } = req.body;
+
+    // Verify the code using Twilio Verify
+    const verificationCheck = await client.verify.v2
+      .services(process.env.TWILIO_SERVICE_SID)
+      .verificationChecks.create({ verificationSid: verificationSid, code });
+
+    if (verificationCheck.status === "approved") {
+      const user = await User.findOne({ phone });
+      // User successfully verified, proceed with login logic (e.g., generate session token)
+      sendToken(user, res, `Welcome back ${user.name}`, 200);
+    } else {
+      res.status(401).json({ message: "Invalid verification code" });
+    }
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
