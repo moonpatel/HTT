@@ -28,8 +28,8 @@ export const getPosts = asyncError(async (req, res, next) => {
     const totalPosts = await Post.countDocuments(); // Replace with your model/query
 
     // Calculate Total Pages (Ensure at least one page)
-    const totalPages = Math.ceil(totalPosts / limit);
-    totalPages = Math.max(totalPages, 1); // Handle cases with very few posts
+    let totalPages = Math.ceil(totalPosts / limit);
+    // totalPages = Math.max(totalPages, 1); // Handle cases with very few posts
 
     // Handle Invalid Page Requests (Edge Cases)
     if (page > totalPages) {
@@ -59,7 +59,7 @@ export const getPosts = asyncError(async (req, res, next) => {
 
     res.status(200).json(response);
   } catch (error) {
-    console.error(error.message);
+    console.error(error);
     res.status(500).json({ message: "Error fetching posts" });
   }
 })
