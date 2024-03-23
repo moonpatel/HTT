@@ -15,6 +15,55 @@ export const likePost = async (likedById, post) => {
   }
 };
 
+export const getPosts = asyncError(async (req, res, next) => {
+  try {
+    const { page = 1, limit = 10 } = req.query; // Extract page and limit from query parameters (default values)
+
+    // Input Validation (Optional)
+    if (page <= 0 || limit <= 0) {
+      return res.status(400).json({ message: "Invalid page or limit values" });
+    }
+
+    // Fetch Total Number of Posts (for pagination calculations)
+    const totalPosts = await Post.countDocuments(); // Replace with your model/query
+
+    // Calculate Total Pages (Ensure at least one page)
+    const totalPages = Math.ceil(totalPosts / limit);
+    totalPages = Math.max(totalPages, 1); // Handle cases with very few posts
+
+    // Handle Invalid Page Requests (Edge Cases)
+    if (page > totalPages) {
+      return res.status(404).json({ message: "Page not found" });
+    }
+
+    // Calculate Skip Value for Pagination (Offset for the current page)
+    const skip = (page - 1) * limit;
+
+    // Fetch Paginated Posts
+    const posts = await Post.find()
+      .sort({ _id: -1 }) // Sort by ID in descending order (latest first)
+      .skip(skip)
+      .limit(limit);
+
+    // Prepare Pagination Information
+    const pagination = {
+      page: Number(page),
+      limit: Number(limit),
+      totalPages,
+    };
+
+    const response = {
+      posts,
+      pagination,
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ message: "Error fetching posts" });
+  }
+})
+
 export const unlikePost = async (unlikedById, post) => {
   try {
     const likeIndex = post.likes.indexOf(unlikedById);
