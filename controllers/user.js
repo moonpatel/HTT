@@ -181,7 +181,7 @@ export const forgetPassword = asyncError(async (req, res, next) => {
 });
 
 export async function getNearbyOutlets(req, res) {
-  const { latitude, longitude } = req.body; // Access location data from request body
+  const { latitude, longitude } = req.query; // Access location data from request body
 
   if (!latitude || !longitude) {
     return res.status(400).json({ message: "Missing location data" });
