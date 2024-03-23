@@ -17,39 +17,57 @@ export const proccessPayment = asyncError(async (req, res, next) => {
 });
 
 export const createOrder = asyncError(async (req, res, next) => {
-  const {
-    shippingInfo,
-    orderItems,
-    paymentMethod,
-    paymentInfo,
-    itemsPrice,
-    taxPrice,
-    shippingCharges,
-    totalAmount,
-  } = req.body;
+  try {
+    const {
+      shippingInfo,
+      orderItems,
+      paymentMethod,
+      paymentInfo,
+      itemsPrice,
+      taxPrice,
+      shippingCharges,
+      totalAmount,
+    } = req.body;
 
-  await Order.create({
-    user: req.user._id,
-    shippingInfo,
-    orderItems,
-    paymentMethod,
-    paymentInfo,
-    itemsPrice,
-    taxPrice,
-    shippingCharges,
-    totalAmount,
-  });
+    await Order.create({
+      user: req.user._id,
+      shippingInfo,
+      orderItems,
+      paymentMethod,
+      paymentInfo,
+      itemsPrice,
+      taxPrice,
+      shippingCharges,
+      totalAmount,
+    });
 
-  for (let i = 0; i < orderItems.length; i++) {
-    const product = await Product.findById(orderItems[i].product);
-    product.stock -= orderItems[i].quantity;
-    await product.save();
+    for (let i = 0; i < orderItems.length; i++) {
+      const product = await Product.findById(orderItems[i].product);
+      product.stock -= orderItems[i].quantity;
+      await product.save();
+    }
+
+    // NOTE: you need to use transactions here
+    // Award coins for orders above 300
+    let coins = 0;
+    if (totalAmount > 300) {
+      
+      coins = Math.floor(totalAmount * 0.05); // Calculate 5% of total amount
+      console.log(totalAmount,coins);
+      // Implement logic to update user's coin balance (replace with your logic)
+      req.user.coins += coins;
+      await req.user.save();
+    }
+
+    res.status(201).json({
+      success: true,
+      message: "Order Placed Successfully",
+      coinsReceived: coins,
+    });
+  } catch (err) {
+    console.error(err);
+    throw err;
   }
-
-  res.status(201).json({
-    success: true,
-    message: "Order Placed Successfully",
-  });
 });
 
 export const getAdminOrders = asyncError(async (req, res, next) => {
