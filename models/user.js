@@ -52,6 +52,10 @@ const schema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  totalSpent: {
+    type: Number,
+    default: 0,
+  },
   otp: Number,
   otp_expire: Date,
 });

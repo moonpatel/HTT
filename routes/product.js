@@ -1,5 +1,5 @@
 import express from "express";
-import { getCategoryProduct, rateProduct } from "../controllers/product.js";
+import { getCategoryProduct, getRating, rateProduct } from "../controllers/product.js";
 import {
   addCategory,
   addProduct,
@@ -37,5 +37,6 @@ router.get("/categories", getAllCategories);
 router.delete("/category/:id", isAuthenticated, isAdmin, deleteCategory);
 
 router.post("/:productId/ratings", isAuthenticated, rateProduct);
+router.get("/:productId/rating", getRating)
 
 export default router;
