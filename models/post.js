@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const schema = new mongoose.Schema({
   title: {
     type: String,
-    required: [true, "Please enter a title for your post"],
+    // required: [true, "Please enter a title for your post"],
   },
   description: {
     type: String,

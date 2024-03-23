@@ -62,7 +62,7 @@ export const getPosts = asyncError(async (req, res, next) => {
     console.error(error);
     res.status(500).json({ message: "Error fetching posts" });
   }
-})
+});
 
 export const unlikePost = async (unlikedById, post) => {
   try {
@@ -152,7 +152,7 @@ export const createPost = async (req, res, next) => {
     const newPost = new Post({
       title,
       description,
-      imageUrl,
+      image: imageUrl,
       createdBy: req.user._id, // Assuming user ID from authenticated user
     });
 
