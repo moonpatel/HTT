@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from 'mongoose'
 
 const schema = new mongoose.Schema({
   name: {
@@ -12,7 +12,6 @@ const schema = new mongoose.Schema({
   location: {
     type: { type: String, default: "Point" }, // GeoJSON Point type
     coordinates: [Number], // Array of [longitude, latitude]
-    required: true,
   },
   dineIn: {
     type: Boolean,

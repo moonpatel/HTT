@@ -11,6 +11,7 @@ import twilio from "twilio";
 dotenv.config({ path: path.resolve(process.cwd(), "../data/config.env") });
 
 import { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN } from "../secrets.js";
+import { Outlet } from "../models/outlet.js";
 const accountSid = TWILIO_ACCOUNT_SID;
 const authToken = TWILIO_AUTH_TOKEN;
 console.log(accountSid, authToken);
@@ -178,6 +179,38 @@ export const forgetPassword = asyncError(async (req, res, next) => {
     message: `Email Sent To ${user.email}`,
   });
 });
+
+export async function getNearbyOutlets(req, res) {
+  const { latitude, longitude } = req.body; // Access location data from request body
+
+  if (!latitude || !longitude) {
+    return res.status(400).json({ message: "Missing location data" });
+  }
+
+  const userLocation = {
+    type: "Point",
+    coordinates: [longitude, latitude], // Inverted order for GeoJSON
+  };
+
+  try {
+    // Replace "Outlet" with your actual Mongoose model name for outlets
+
+    // Define the maximum search radius (in kilometers)
+    // const maxDistance = 5;
+
+    // Find nearest outlets using $near with limit and sort
+    const nearbyOutlets = await Outlet.find({
+      location: { $near: userLocation },
+    })
+      .limit(3) // Limit results to 3 nearest outlets
+      .sort({ location: 1 }); // Sort by distance (ascending)
+
+    res.json({ outlets: nearbyOutlets });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error finding nearby outlets" });
+  }
+}
 
 export const resetPassword = asyncError(async (req, res, next) => {
   const { otp, password } = req.body;

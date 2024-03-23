@@ -42,8 +42,8 @@ const schema = new mongoose.Schema({
     },
   ],
   dineIn: {
-    type:Boolean,
-    require:true
+    type: Boolean,
+    require: true,
   },
   user: {
     type: mongoose.Schema.Types.ObjectId,
