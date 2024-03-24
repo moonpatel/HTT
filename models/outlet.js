@@ -17,6 +17,9 @@ const schema = new mongoose.Schema({
     type: { type: String, default: "Point" }, // GeoJSON Point type
     coordinates: [Number], // Array of [longitude, latitude]
   },
+  rating: {
+    type: Number,
+  },
   dineIn: {
     type: Boolean,
     default: true, // Indicate if dine-in is available
