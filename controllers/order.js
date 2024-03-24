@@ -27,6 +27,7 @@ export const createOrder = asyncError(async (req, res, next) => {
       taxPrice,
       shippingCharges,
       totalAmount,
+      dineIn
     } = req.body;
 
     await Order.create({
@@ -39,6 +40,7 @@ export const createOrder = asyncError(async (req, res, next) => {
       taxPrice,
       shippingCharges,
       totalAmount,
+      dineIn
     });
 
     for (let i = 0; i < orderItems.length; i++) {
@@ -51,14 +53,13 @@ export const createOrder = asyncError(async (req, res, next) => {
     // Award coins for orders above 300
     let coins = 0;
     if (totalAmount > 300) {
-      
       coins = Math.floor(totalAmount * 0.05); // Calculate 5% of total amount
-      console.log(totalAmount,coins);
+      console.log(totalAmount, coins);
       // Implement logic to update user's coin balance (replace with your logic)
       req.user.coins += coins;
-      await req.user.save();
     }
-
+    req.user.totalSpent += totalAmount;
+    await req.user.save();
     res.status(201).json({
       success: true,
       message: "Order Placed Successfully",

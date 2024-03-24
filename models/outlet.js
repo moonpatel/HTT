@@ -1,4 +1,4 @@
-import mongoose from 'mongoose'
+import mongoose from "mongoose";
 
 const schema = new mongoose.Schema({
   name: {
@@ -8,6 +8,10 @@ const schema = new mongoose.Schema({
   address: {
     type: String,
     required: true,
+  },
+  image: {
+    type: String,
+    // required:true
   },
   location: {
     type: { type: String, default: "Point" }, // GeoJSON Point type
